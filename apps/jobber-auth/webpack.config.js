@@ -15,11 +15,14 @@ module.exports = {
       compiler: 'tsc',
       main: './src/main.ts',
       tsConfig: './tsconfig.app.json',
-      assets: ["./src/assets"],
+      assets: ['./src/assets'],
       optimization: false,
       outputHashing: 'none',
       generatePackageJson: true,
       sourceMap: true,
-    })
+      // Keep Prisma (and other node_modules) out of the bundle — bundling
+      // breaks Prisma Client class inheritance at runtime.
+      externalDependencies: 'all',
+    }),
   ],
 };

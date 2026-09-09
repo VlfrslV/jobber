@@ -19,4 +19,8 @@ export class UsersService {
   async getUsers() {
     return this.prismaService.user.findMany();
   }
+
+  async getUser(args: Prisma.UserWhereUniqueInput) {
+    return await this.prismaService.user.findUniqueOrThrow({ where: args });
+  }
 }

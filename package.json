@@ -11,22 +11,37 @@
     "build:jobs": "nx build jobber-jobs",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "lint": "nx run-many -t lint",
-    "test": "nx run-many -t test",
+    "lint:all": "nx run-many -t lint",
+    "test:all": "nx run-many -t test",
     "graph": "nx graph",
     "prepare": "husky",
-    "g:nest": "bash tools/generate-nest-feature.sh"
+    "g:nest": "bash tools/generate-nest-feature.sh",
+    "generate-ts-proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./types ./proto/*.proto --ts_proto_opt=nestJs=true"
+  },
+  "nx": {
+    "targets": {
+      "generate-ts-proto": {
+        "inputs": [
+          "{workspaceRoot}/proto/*.proto"
+        ],
+        "cache": true
+      }
+    }
   },
   "private": true,
   "dependencies": {
     "@apollo/server": "^5.5.1",
     "@as-integrations/express5": "^1.1.2",
+    "@golevelup/nestjs-discovery": "^7.0.3",
+    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/proto-loader": "^0.8.1",
     "@nestjs/apollo": "^13.4.5",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^12.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/graphql": "^13.4.5",
     "@nestjs/jwt": "^12.0.1",
+    "@nestjs/microservices": "^11.2.3",
     "@nestjs/passport": "^12.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@prisma/adapter-pg": "^7.10.0",
@@ -42,7 +57,8 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.23.0",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "ts-proto": "^2.12.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",

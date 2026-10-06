@@ -5,6 +5,7 @@ import { UsersModule } from '../users/models/users.module';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       }),
     }),
   ],
+  controllers: [AuthController],
   providers: [AuthService, AuthResolver, JwtStrategy],
 })
 export class AuthModule {}

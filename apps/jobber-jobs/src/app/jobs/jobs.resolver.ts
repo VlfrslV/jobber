@@ -2,8 +2,11 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JobModel } from './models/job.model';
 import { JobsService } from './jobs.service';
 import { ExecuteJobInput } from './dto/execute-job.input';
+import { UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from '@jobber/nestjs';
 
 @Resolver()
+@UseGuards(GqlAuthGuard)
 export class JobsResolver {
   constructor(private readonly jobsService: JobsService) {}
   @Query(() => [JobModel], { name: 'jobs' })

@@ -16,9 +16,12 @@
     "strict": false,
     "paths": {
       "@jobber/nestjs": ["./libs/nestjs/src/index.ts"],
+      "@jobber/types": ["./libs/types/src/index.ts"],
+      "@jobber/types/*": ["./libs/types/src/*"],
       "@prisma-clients/jobber-auth": [
         "./node_modules/@prisma-clients/jobber-auth"
-      ]
+      ],
+      "@jobber/pulsar": ["./pulsar/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

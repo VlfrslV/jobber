@@ -50,5 +50,12 @@ export default [
         ],
         // Override or add rules here
         rules: {}
+    },
+    {
+        files: ["**/webpack.config.js"],
+        rules: {
+            "@nx/enforce-module-boundaries": "off"
+        }
     }
 ];
+

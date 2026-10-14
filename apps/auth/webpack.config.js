@@ -1,28 +1,11 @@
-const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
-const { join } = require('path');
+const { createAppConfig } = require('@jobber/webpack-config/app');
 
-module.exports = {
-  output: {
-    path: join(__dirname, '../../dist/apps/auth'),
-    clean: true,
-    ...(process.env.NODE_ENV !== 'production' && {
-      devtoolModuleFilenameTemplate: '[absolute-resource-path]',
-    }),
+module.exports = createAppConfig({
+  dirname: __dirname,
+  name: 'auth',
+  plugin: {
+    // Keep Prisma (and other node_modules) out of the bundle — bundling
+    // breaks Prisma Client class inheritance at runtime.
+    externalDependencies: 'all',
   },
-  plugins: [
-    new NxAppWebpackPlugin({
-      target: 'node',
-      compiler: 'tsc',
-      main: './src/main.ts',
-      tsConfig: './tsconfig.app.json',
-      assets: ['./src/assets'],
-      optimization: false,
-      outputHashing: 'none',
-      generatePackageJson: true,
-      sourceMap: true,
-      // Keep Prisma (and other node_modules) out of the bundle — bundling
-      // breaks Prisma Client class inheritance at runtime.
-      externalDependencies: 'all',
-    }),
-  ],
-};
+});

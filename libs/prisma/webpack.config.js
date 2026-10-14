@@ -1,25 +1,6 @@
-const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
-const { join } = require('path');
+const { createLibConfig } = require('@jobber/webpack-config/lib');
 
-module.exports = {
-  output: {
-    path: join(__dirname, '../../dist/libs/prisma'),
-    clean: true,
-    libraryTarget: 'commonjs2',
-    ...(process.env.NODE_ENV !== 'production' && {
-      devtoolModuleFilenameTemplate: '[absolute-resource-path]',
-    }),
-  },
-  plugins: [
-    new NxAppWebpackPlugin({
-      target: 'node',
-      compiler: 'tsc',
-      main: './src/index.ts',
-      tsConfig: './tsconfig.lib.json',
-      optimization: false,
-      outputHashing: 'none',
-      generatePackageJson: false,
-      sourceMap: true,
-    }),
-  ],
-};
+module.exports = createLibConfig({
+  dirname: __dirname,
+  name: 'prisma',
+});

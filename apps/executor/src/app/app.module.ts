@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { JobsModule } from './jobs/jobs.module';
 import { ConfigModule } from '@nestjs/config';
+import { LoggerModule } from '@jobber/nestjs';
 
 @Module({
-  imports: [JobsModule, ConfigModule.forRoot({ isGlobal: true })],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), LoggerModule, JobsModule],
   controllers: [AppController],
   providers: [AppService],
 })

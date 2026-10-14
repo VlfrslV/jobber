@@ -10,7 +10,7 @@ import { init } from '@jobber/nestjs';
 config({ path: join(process.cwd(), 'apps/auth/.env') });
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
   await init(app);
   app.connectMicroservice<GrpcOptions>({
     transport: Transport.GRPC,

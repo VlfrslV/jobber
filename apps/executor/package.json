@@ -1,0 +1,12 @@
+{
+  "name": "@jobber/executor",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@jobber/nestjs": "*",
+    "@jobber/pulsar": "*",
+    "dotenv": "^17.4.2",
+    "fibonacci": "^1.6.12",
+    "module-alias": "^2.3.4"
+  }
+}

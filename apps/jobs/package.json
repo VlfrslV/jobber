@@ -1,0 +1,21 @@
+{
+  "name": "@jobber/jobs",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@apollo/server": "^5.5.1",
+    "@as-integrations/express5": "^1.1.2",
+    "@golevelup/nestjs-discovery": "^7.0.3",
+    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/proto-loader": "^0.8.1",
+    "@jobber/graphql": "*",
+    "@jobber/nestjs": "*",
+    "@jobber/pulsar": "*",
+    "@jobber/grpc": "*",
+    "dotenv": "^17.4.2",
+    "graphql": "^16.14.2",
+    "graphql-type-json": "^0.3.2",
+    "module-alias": "^2.3.4",
+    "pulsar-client": "^1.18.0"
+  }
+}

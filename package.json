@@ -2,42 +2,33 @@
   "name": "@jobber/source",
   "version": "0.0.0",
   "license": "MIT",
+  "private": true,
   "scripts": {
-    "start:auth": "nx serve jobber-auth",
-    "build:auth": "nx build jobber-auth",
-    "generate:auth": "nx run jobber-auth:generate-types",
-    "migrate:auth": "nx run jobber-auth:migrate-prisma",
-    "start:jobs": "nx serve jobber-jobs",
-    "build:jobs": "nx build jobber-jobs",
+    "start:auth": "nx serve auth",
+    "build:auth": "nx build auth",
+    "generate:auth": "nx run auth:generate-types",
+    "migrate:auth": "nx run auth:migrate-prisma",
+    "start:jobs": "nx serve jobs",
+    "build:jobs": "nx build jobs",
+    "start:executor": "nx serve executor",
+    "start:all": "nx run-many -t serve --projects=auth,jobs,executor",
+    "build:all": "nx run-many -t build",
+    "start:dist:auth": "node ./dist/apps/auth/main.js",
+    "start:dist:jobs": "node ./dist/apps/jobs/main.js",
+    "start:dist:executor": "node ./dist/apps/executor/main.js",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "lint:all": "nx run-many -t lint",
     "test:all": "nx run-many -t test",
     "graph": "nx graph",
     "prepare": "husky",
-    "g:nest": "bash tools/generate-nest-feature.sh",
-    "generate-ts-proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./libs/types/src ./proto/*.proto --ts_proto_opt=nestJs=true"
+    "g:nest": "bash tools/generate-nest-feature.sh"
   },
-  "nx": {
-    "targets": {
-      "generate-ts-proto": {
-        "inputs": [
-          "{workspaceRoot}/proto/*.proto"
-        ],
-        "outputs": [
-          "{workspaceRoot}/libs/types/src/proto"
-        ],
-        "cache": true
-      }
-    }
-  },
-  "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
   "dependencies": {
-    "@apollo/server": "^5.5.1",
-    "@as-integrations/express5": "^1.1.2",
-    "@golevelup/nestjs-discovery": "^7.0.3",
-    "@grpc/grpc-js": "^1.14.4",
-    "@grpc/proto-loader": "^0.8.1",
     "@nestjs/apollo": "^13.4.5",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^12.0.0",
@@ -47,21 +38,18 @@
     "@nestjs/microservices": "^11.2.3",
     "@nestjs/passport": "^12.0.0",
     "@nestjs/platform-express": "^11.0.0",
-    "@prisma/adapter-pg": "^7.10.0",
-    "@prisma/client": "^7.10.0",
-    "axios": "^1.6.0",
-    "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
-    "cookie-parser": "^1.4.7",
-    "dotenv": "^17.4.2",
-    "graphql": "^16.14.2",
-    "passport": "^0.7.0",
-    "passport-jwt": "^4.0.1",
-    "pg": "^8.23.0",
+    "module-alias": "^2.3.4",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.0",
-    "ts-proto": "^2.12.3"
+    "rxjs": "^7.8.0"
+  },
+  "_moduleAliases": {
+    "@jobber/grpc": "dist/libs/grpc/main",
+    "@jobber/graphql": "dist/libs/graphql/main",
+    "@jobber/pulsar": "dist/libs/pulsar/main",
+    "@jobber/nestjs": "dist/libs/nestjs/main",
+    "@jobber/prisma": "dist/libs/prisma/main"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -77,11 +65,9 @@
     "@nx/webpack": "23.1.2",
     "@nx/workspace": "23.1.2",
     "@swc/helpers": "~0.5.18",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^4.17.21",
     "@types/jest": "~30.0.0",
     "@types/node": "^22.0.0",
-    "@types/passport-jwt": "^4.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "husky": "^9.1.7",
@@ -91,9 +77,9 @@
     "lint-staged": "^16.4.0",
     "nx": "23.1.2",
     "prettier": "~3.6.2",
-    "prisma": "^7.10.0",
     "ts-jest": "^29.4.7",
     "ts-node": "10.9.1",
+    "ts-proto": "^2.12.3",
     "tslib": "^2.3.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.58.0",

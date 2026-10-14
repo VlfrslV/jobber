@@ -2,14 +2,14 @@
 set -euo pipefail
 
 # Usage:
-#   npm run g:nest -- apps/jobber-auth/src/app/auth/auth
-#   ./tools/generate-nest-feature.sh apps/jobber-auth/src/app/users/users
+#   npm run g:nest -- apps/auth/src/app/auth/auth
+#   ./tools/generate-nest-feature.sh apps/auth/src/app/users/users
 
 PATH_ARG="${1:-}"
 
 if [[ -z "$PATH_ARG" ]]; then
   echo "Usage: npm run g:nest -- <path>"
-  echo "Example: npm run g:nest -- apps/jobber-auth/src/app/auth/auth"
+  echo "Example: npm run g:nest -- apps/auth/src/app/auth/auth"
   exit 1
 fi
 

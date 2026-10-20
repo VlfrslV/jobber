@@ -68,7 +68,7 @@ env:
   AWS_REGION: eu-north-1
   # Account ID + region baked into the ECR hostname
   # Pattern: <account-id>.dkr.ecr.<region>.amazonaws.com
-  ECR_REGISTRY: 280248702405.dkr.ecr.eu-north-1.amazonaws.com
+  ECR_REGISTRY: 280248702403.dkr.ecr.eu-north-1.amazonaws.com
 
 # -----------------------------------------------------------------------------
 # JOBS = parallel/serial units of work (each gets its OWN fresh VM)

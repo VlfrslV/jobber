@@ -1,0 +1,40 @@
+# Dependencies & build output
+node_modules
+**/node_modules
+dist
+tmp
+out-tsc
+coverage
+
+# Nx cache
+.nx/cache
+.nx/workspace-data
+.nx/migrate-runs
+
+# Git / CI / IDE / local tooling
+.git
+.github
+.vscode
+.idea
+.claude
+.cursor
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs & OS files
+*.log
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# Docs (not needed in image builds)
+*.md
+LICENSE
+
+# Docker compose (infra only; not part of image context)
+docker-compose.yaml
+docker-compose.yml

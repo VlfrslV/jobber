@@ -1,46 +1,234 @@
+# =============================================================================
+# GitHub Actions workflow file
+# Location: .github/workflows/*.yml  → GitHub auto-discovers these
+# Docs: https://docs.github.com/en/actions/writing-workflows
+# =============================================================================
+
+# Display name in the Actions tab (UI only)
 name: CI
 
+# -----------------------------------------------------------------------------
+# WHEN does this workflow run?
+# -----------------------------------------------------------------------------
+# `on` = triggers. You can combine many events.
+#
+# Examples of other triggers you might add later:
+#   on:
+#     schedule:
+#       - cron: '0 2 * * *'          # every day at 02:00 UTC
+#     workflow_dispatch:               # manual "Run workflow" button
+#     push:
+#       paths: ['apps/auth/**']        # only if auth files changed
+# -----------------------------------------------------------------------------
 on:
+  # Run when someone pushes commits
   push:
     branches:
+      # Only pushes TO the main branch (not feature branches)
+      # Example: git push origin main  → runs
+      # Example: git push origin feat/x → does NOT run this push trigger
+      #          (but pull_request below still covers PRs)
       - main
+
+  # Run when a pull request is opened / updated / reopened
+  # (any source branch → any target, unless you restrict with branches:)
+  #
+  # Example: open PR from feat/login → main  → runs
   pull_request:
 
+# -----------------------------------------------------------------------------
+# PERMISSIONS for the default GITHUB_TOKEN
+# -----------------------------------------------------------------------------
+# Least privilege: only grant what the job needs.
+# Without this, token may get broader defaults depending on repo settings.
+#
+# Common values: read | write | none
+# Examples of other permissions:
+#   id-token: write     # for OIDC → AWS (no long-lived keys)
+#   packages: write     # push to GitHub Container Registry
+#   pull-requests: write
+# -----------------------------------------------------------------------------
 permissions:
-  actions: read
-  contents: read
+  actions: read # read Actions/Nx Cloud related data
+  contents: read # read repo files (needed for checkout)
 
+# -----------------------------------------------------------------------------
+# WORKFLOW-LEVEL env vars (available in ALL jobs)
+# -----------------------------------------------------------------------------
+# Access later with: ${{ env.AWS_REGION }}
+#
+# Example expansion:
+#   AWS_REGION = eu-north-1
+#   ECR_REGISTRY = 280248702405.dkr.ecr.eu-north-1.amazonaws.com
+#   Full image tag becomes:
+#     280248702405.dkr.ecr.eu-north-1.amazonaws.com/jobber/auth:latest
+# -----------------------------------------------------------------------------
+env:
+  # Stockholm region (AWS region codes look like: us-east-1, eu-west-1, …)
+  AWS_REGION: eu-north-1
+  # Account ID + region baked into the ECR hostname
+  # Pattern: <account-id>.dkr.ecr.<region>.amazonaws.com
+  ECR_REGISTRY: 280248702405.dkr.ecr.eu-north-1.amazonaws.com
+
+# -----------------------------------------------------------------------------
+# JOBS = parallel/serial units of work (each gets its OWN fresh VM)
+# -----------------------------------------------------------------------------
 jobs:
+  # ===========================================================================
+  # JOB 1: main — lint, test, build
+  # ===========================================================================
   main:
+    # Which runner OS/image. Other examples: windows-latest, macos-latest
     runs-on: ubuntu-latest
+
+    # JOB-LEVEL env (only for this job; merges with workflow-level env)
     env:
-      # Required by prisma.config.ts even for `prisma generate` (no real DB needed).
+      # ${{ secrets.NAME }} pulls from:
+      #   Repo → Settings → Secrets and variables → Actions
+      # Value is NEVER printed in logs (GitHub masks it)
+      #
+      # Example secret value (fake):
+      #   postgresql://user:pass@localhost:5432/auth
       AUTH_DATABASE_URL: ${{ secrets.AUTH_DATABASE_URL }}
+
     steps:
+      # --- Step: clone the repository onto the runner ---
+      # `uses:` = reuse a published action from GitHub Marketplace / another repo
+      # @v7 = major version tag (actions pin to a release)
       - uses: actions/checkout@v7
         with:
+          # Partial clone optimization (less data transferred)
           filter: tree:0
+          # 0 = fetch FULL git history (not just latest commit)
+          # Why? Nx "affected" / some caching needs ancestors
+          # fetch-depth: 1 would be shallow (faster, less history)
           fetch-depth: 0
 
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      # Connect your workspace by running "nx connect" and uncomment this line to enable task distribution
-      # - run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
-
-      # Cache node_modules
+      # --- Step: install Node.js ---
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
-          cache: 'npm'
-      - name: Setup protoc
+          node-version: 24 # exact major; could be '24.x' or 'lts/*'
+          cache: 'npm' # cache ~/.npm based on package-lock.json
+          # Other cache options: 'yarn' | 'pnpm'
+
+      # --- Step: install protoc (Protocol Buffers compiler) ---
+      # Needed because this monorepo generates gRPC code from .proto files
+      - name: Setup protoc # `name:` is human-readable label in the UI
         uses: arduino/setup-protoc@v3.0.0
 
+      # --- Step: install npm dependencies ---
+      # `npm ci` = clean install from lockfile (CI-friendly, reproducible)
+      # Prefer over `npm install` in CI (won't mutate package-lock.json)
       - run: npm ci
 
-      # Prepend any command with "nx record --" to record its logs to Nx Cloud
-      # - run: npx nx record -- echo Hello World
+      # --- Step: lint + test + build all projects via Nx ---
+      # -t = targets to run; run-many = across many projects
+      # Equivalent idea: npx nx run auth:lint && nx run auth:test && …
       - run: npx nx run-many -t lint test build
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
+
+      # --- Step: Nx Cloud CI helper ---
+      # Uploads/fixes CI metadata even if earlier steps failed
       - run: npx nx fix-ci
+        # `if: always()` → run this step regardless of previous success/failure
+        # Other examples:
+        #   if: failure()                          # only when something failed
+        #   if: success()                          # default (only if all ok)
+        #   if: github.event_name == 'pull_request'
         if: always()
+
+  # ===========================================================================
+  # JOB 2: docker — build & push images to Amazon ECR
+  # ===========================================================================
+  docker:
+    # Wait until job `main` finishes successfully first
+    # (if main fails, docker is skipped)
+    needs: main
+
+    # Only run on push to main — NOT on pull requests
+    #
+    # Why? Avoid pushing unreviewed PR images to ECR as :latest
+    #
+    # github.event_name examples: 'push' | 'pull_request' | 'workflow_dispatch'
+    # github.ref examples:
+    #   refs/heads/main          → branch main
+    #   refs/heads/feat/login    → branch feat/login
+    #   refs/tags/v1.0.0         → tag v1.0.0
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    # -------------------------------------------------------------------------
+    # MATRIX = run this job N times in parallel with different variables
+    # -------------------------------------------------------------------------
+    # Here: 3 parallel docker builds (auth, jobs, executor)
+    #
+    # Inside steps you access them as:
+    #   ${{ matrix.app }}    → auth | jobs | executor
+    #   ${{ matrix.image }}  → jobber/auth | jobber/jobs | jobber/executor
+    #
+    # Alternative matrix style (same idea):
+    #   strategy:
+    #     matrix:
+    #       app: [auth, jobs, executor]
+    # -------------------------------------------------------------------------
+    strategy:
+      matrix:
+        include:
+          - app: auth # → apps/auth/Dockerfile
+            image: jobber/auth # → ECR repo name path
+          - app: jobs
+            image: jobber/jobs
+          - app: executor
+            image: jobber/executor
+
+    steps:
+      # Fresh VM → must checkout again (jobs don't share the filesystem)
+      - uses: actions/checkout@v7
+
+      # --- Step: put AWS credentials into the environment ---
+      # Sets AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, etc.
+      # so later AWS/Docker actions can talk to your account
+      #
+      # Secrets live in: Settings → Secrets and variables → Actions
+      # Example secret names you configured:
+      #   AMAZON_ACCESS_KEY_ID
+      #   AMAZON_ACCESS_KEY_KEY   (note: unusual name; usually SECRET_ACCESS_KEY)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AMAZON_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AMAZON_ACCESS_KEY_KEY }}
+          # Reuses workflow-level env → resolves to: eu-north-1
+          aws-region: ${{ env.AWS_REGION }}
+
+      # --- Step: docker login to ECR ---
+      # After this, `docker push` to *.dkr.ecr.*.amazonaws.com works
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # --- Step: build image from Dockerfile and push to ECR ---
+      #
+      # For matrix row app=auth, this effectively becomes:
+      #   docker build -f apps/auth/Dockerfile -t \
+      #     280248702405.dkr.ecr.eu-north-1.amazonaws.com/jobber/auth:latest \
+      #     -t 280248702405.../jobber/auth:<commit-sha> .
+      #   docker push … (both tags)
+      #
+      # github.sha example: a1b2c3d4e5f6… (full commit SHA of the push)
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          # Build context = repo root (so Dockerfile can COPY from monorepo root)
+          context: .
+          # Dockerfile path depends on matrix.app
+          # Example: apps/auth/Dockerfile | apps/jobs/Dockerfile | …
+          file: apps/${{ matrix.app }}/Dockerfile
+          # true = push to registry; false = build only (local to runner)
+          push: true
+          # Multi-line string of tags (| keeps newlines)
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ matrix.image }}:latest
+            ${{ env.ECR_REGISTRY }}/${{ matrix.image }}:${{ github.sha }}
+          # Example final tags for auth:
+          #   280248702405.dkr.ecr.eu-north-1.amazonaws.com/jobber/auth:latest
+          #   280248702405.dkr.ecr.eu-north-1.amazonaws.com/jobber/auth:abc123…

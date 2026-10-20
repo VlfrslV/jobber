@@ -1,6 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'crypto';
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
+import type { IncomingMessage } from 'http';
 
 @Global()
 @Module({
@@ -15,6 +17,11 @@ import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
               ? undefined
               : { target: 'pino-pretty', options: { singleLine: true } },
             level: isProduction ? 'info' : 'debug',
+            genReqId: (req: IncomingMessage) =>
+              req.headers['x-request-id']?.toString() ?? randomUUID(),
+            customProps: (req: IncomingMessage) => ({
+              requestId: req.id,
+            }),
           },
         };
       },

@@ -8,11 +8,13 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { LoggerModule } from '@jobber/nestjs';
 import { GqlLoggerPlugin } from '@jobber/graphql';
+import { GrpcModule } from '@jobber/grpc';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     LoggerModule,
+    GrpcModule,
     PrismaModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

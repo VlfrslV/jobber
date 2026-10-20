@@ -11,6 +11,7 @@ import {
   AUTH_SERVICE_NAME,
   AuthServiceClient,
 } from '@jobber/grpc';
+import { Metadata } from '@grpc/grpc-js';
 import { ClientGrpc } from '@nestjs/microservices';
 import { catchError, map, Observable, of } from 'rxjs';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -29,13 +30,25 @@ export class GqlAuthGuard implements CanActivate, OnModuleInit {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const token = this.getRequest(context).cookies?.Authentication;
+    const req = this.getRequest(context);
+    const token = req.cookies?.Authentication;
 
     if (!token) return false;
 
-    return this.authService.authenticate({ token }).pipe(
+    const metadata = new Metadata();
+    const requestId = req.headers['x-request-id'] ?? req.id;
+    if (requestId) {
+      metadata.set('x-request-id', String(requestId));
+    }
+
+    return (
+      this.authService.authenticate as (
+        request: { token: string },
+        metadata?: Metadata,
+      ) => Observable<{ id: number; email: string }>
+    )({ token }, metadata).pipe(
       map((res) => {
-        this.getRequest(context).user = res;
+        req.user = res;
         this.logger.log(res);
         return true;
       }),

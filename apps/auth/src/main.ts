@@ -12,14 +12,17 @@ config({ path: join(process.cwd(), 'apps/auth/.env') });
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   await init(app);
-  app.connectMicroservice<GrpcOptions>({
-    transport: Transport.GRPC,
-    options: {
-      package: AUTH_PACKAGE_NAME,
-      protoPath: AUTH_PROTO_PATH,
-      url: '0.0.0.0:50051',
+  app.connectMicroservice<GrpcOptions>(
+    {
+      transport: Transport.GRPC,
+      options: {
+        package: AUTH_PACKAGE_NAME,
+        protoPath: AUTH_PROTO_PATH,
+        url: '0.0.0.0:50051',
+      },
     },
-  });
+    { inheritAppConfig: true },
+  );
   await app.startAllMicroservices();
 }
 

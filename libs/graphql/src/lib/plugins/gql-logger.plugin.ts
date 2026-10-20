@@ -6,6 +6,8 @@ import {
   GraphQLRequestListener,
 } from '@apollo/server';
 import { Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { GqlContext } from '../interfaces';
 
 export class GqlLoggerPlugin implements ApolloServerPlugin {
   private readonly logger = new Logger(GqlLoggerPlugin.name);
@@ -14,13 +16,24 @@ export class GqlLoggerPlugin implements ApolloServerPlugin {
     requestContext: GraphQLRequestContext<BaseContext>,
   ): Promise<GraphQLRequestListener<BaseContext> | void> {
     const { request } = requestContext;
+    const gqlContext = requestContext.contextValue as GqlContext | undefined;
     const start = Date.now();
+    const requestId =
+      request.http?.headers?.get('x-request-id') ??
+      gqlContext?.req?.id?.toString() ??
+      randomUUID();
+
+    if (gqlContext) {
+      gqlContext.requestId = requestId;
+      if (gqlContext.req && !gqlContext.req.headers['x-request-id']) {
+        gqlContext.req.headers['x-request-id'] = requestId;
+      }
+    }
 
     this.logger.log(`Request started: ${request.operationName}`, {
-      headers: request?.http?.headers,
+      requestId,
       variables: request.variables,
       query: request.query,
-      start,
     });
 
     return {
@@ -28,11 +41,13 @@ export class GqlLoggerPlugin implements ApolloServerPlugin {
         responseContext: GraphQLRequestContextWillSendResponse<BaseContext>,
       ) => {
         const { response } = responseContext;
-        const duration = Date.now() - start;
+        response.http.headers.set('x-request-id', requestId);
+
         this.logger.log(`Request completed: ${request.operationName}`, {
+          requestId,
           query: request.query,
           statusCode: response.http.status,
-          duration: `${duration}ms`,
+          durationMs: Date.now() - start,
         });
       },
     };

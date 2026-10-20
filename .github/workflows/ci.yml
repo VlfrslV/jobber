@@ -190,14 +190,14 @@ jobs:
       # so later AWS/Docker actions can talk to your account
       #
       # Secrets live in: Settings → Secrets and variables → Actions
-      # Example secret names you configured:
-      #   AMAZON_ACCESS_KEY_ID
-      #   AMAZON_ACCESS_KEY_KEY   (note: unusual name; usually SECRET_ACCESS_KEY)
+      # Secret names (must match Settings → Secrets → Actions):
+      #   AWS_ACCESS_KEY_ID
+      #   AWS_ACCESS_KEY_KEY
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AMAZON_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AMAZON_ACCESS_KEY_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_KEY }}
           # Reuses workflow-level env → resolves to: eu-north-1
           aws-region: ${{ env.AWS_REGION }}
 

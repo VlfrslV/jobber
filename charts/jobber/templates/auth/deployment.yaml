@@ -1,0 +1,44 @@
+{{- if .Values.auth.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  labels:
+    app: auth
+spec:
+  replicas: {{ .Values.auth.replicas }}
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      initContainers:
+        - name: prisma-migrate
+          image: {{ .Values.auth.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          workingDir: /app/apps/auth
+          command: ["npx", "prisma", "migrate", "deploy"]
+          env:
+            - name: AUTH_DATABASE_URL
+              value: {{ include "jobber.databaseUrl" . | quote }}
+      containers:
+        - name: auth
+          image: {{ .Values.auth.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.auth.port.http }}
+            - containerPort: {{ .Values.auth.port.grpc }}
+          env:
+            - name: PORT
+              value: {{ .Values.auth.port.http | quote }}
+            - name: AUTH_JWT_SECRET
+              value: {{ .Values.auth.jwt.secret | quote }}
+            - name: JWT_EXPIRATION_MS
+              value: {{ .Values.auth.jwt.expirationMs | int64 | quote }}
+            - name: AUTH_GRPC_SERVICE_URL
+              value: "0.0.0.0:{{ .Values.auth.port.grpc }}"
+{{ include "jobber.env" . | nindent 12 }}
+{{- end }}

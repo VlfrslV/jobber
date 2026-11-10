@@ -10,11 +10,14 @@ COPY jest.preset.js ./
 COPY eslint.config.mjs ./
 
 COPY apps/executor ./apps/executor
+COPY libs/grpc ./libs/grpc
 COPY libs/nestjs ./libs/nestjs
 COPY libs/pulsar ./libs/pulsar
 COPY libs/webpack-config ./libs/webpack-config
 
 RUN npm install
+
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
 RUN npx nx build executor
 
@@ -28,6 +31,7 @@ ENV PULSAR_SERVICE_URL=pulsar://host.docker.internal:6650
 COPY --from=builder /workspace/package.json ./
 COPY --from=builder /workspace/package-lock.json ./
 COPY --from=builder /workspace/apps/executor/package.json ./apps/executor/package.json
+COPY --from=builder /workspace/libs/grpc/package.json ./libs/grpc/package.json
 COPY --from=builder /workspace/libs/nestjs/package.json ./libs/nestjs/package.json
 COPY --from=builder /workspace/libs/pulsar/package.json ./libs/pulsar/package.json
 

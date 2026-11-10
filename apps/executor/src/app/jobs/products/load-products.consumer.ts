@@ -36,7 +36,6 @@ export class LoadProductsConsumer
 
   protected async onMessage(data: ProductsLoadMessage): Promise<void> {
     console.log(data);
-    return;
     await firstValueFrom(
       this.productsService.createProduct({
         name: data.name,

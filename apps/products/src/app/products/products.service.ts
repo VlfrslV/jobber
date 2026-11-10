@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE_CONNECTION } from '../database/database-connection';
 import * as productsSchema from './schema';
+import { CategoriesService } from '../categories/categories.service';
 
 type Product = typeof productsSchema.products.$inferSelect;
 type NewProduct = Omit<
@@ -15,12 +16,18 @@ export class ProductsService {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof productsSchema>,
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   async createProduct(product: NewProduct): Promise<Product> {
+    const category = await this.categoriesService.getCategoryByName(
+      product.category,
+    );
+    const price = (Number(product.price) + (category?.charge ?? 0)).toFixed(2);
+
     const [created] = await this.database
       .insert(productsSchema.products)
-      .values(product)
+      .values({ ...product, price })
       .returning();
     return created;
   }

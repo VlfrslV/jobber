@@ -8,6 +8,20 @@
       "when": 1793973805441,
       "tag": "0000_outstanding_tag",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794326763054,
+      "tag": "0001_lovely_stephen_strange",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794326890287,
+      "tag": "0002_seed-categories",
+      "breakpoints": true
     }
   ]
 }

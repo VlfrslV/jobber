@@ -180,6 +180,8 @@ jobs:
             image: jobber/jobs
           - app: executor
             image: jobber/executor
+          - app: products
+            image: jobber/products
 
     steps:
       # Fresh VM → must checkout again (jobs don't share the filesystem)

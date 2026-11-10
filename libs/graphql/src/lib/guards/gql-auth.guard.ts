@@ -6,11 +6,7 @@ import {
   Logger,
   OnModuleInit,
 } from '@nestjs/common';
-import {
-  AUTH_PACKAGE_NAME,
-  AUTH_SERVICE_NAME,
-  AuthServiceClient,
-} from '@jobber/grpc';
+import { AUTH_SERVICE_NAME, AuthServiceClient, Packages } from '@jobber/grpc';
 import { Metadata } from '@grpc/grpc-js';
 import { ClientGrpc } from '@nestjs/microservices';
 import { catchError, map, Observable, of } from 'rxjs';
@@ -20,7 +16,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 export class GqlAuthGuard implements CanActivate, OnModuleInit {
   private authService: AuthServiceClient;
   private readonly logger = new Logger(GqlAuthGuard.name);
-  constructor(@Inject(AUTH_PACKAGE_NAME) private client: ClientGrpc) {}
+  constructor(@Inject(Packages.AUTH) private client: ClientGrpc) {}
 
   onModuleInit() {
     this.authService =

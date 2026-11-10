@@ -5,6 +5,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
+    "class-validator": "^0.15.1",
     "pulsar-client": "^1.18.0"
   }
 }

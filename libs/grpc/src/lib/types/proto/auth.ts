@@ -2,13 +2,11 @@
 // versions:
 //   protoc-gen-ts_proto  v2.12.3
 //   protoc               v7.36.1
-// source: proto/auth.proto
+// source: auth.proto
 
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
-
-export const protobufPackage = 'auth';
 
 export interface AuthenticateRequest {
   token: string;
@@ -18,8 +16,6 @@ export interface User {
   id: number;
   email: string;
 }
-
-export const AUTH_PACKAGE_NAME = 'auth';
 
 export interface AuthServiceClient {
   authenticate(request: AuthenticateRequest): Observable<User>;

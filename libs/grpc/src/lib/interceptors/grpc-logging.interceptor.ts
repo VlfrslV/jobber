@@ -6,15 +6,14 @@ import {
 } from '@nestjs/common';
 import { Metadata } from '@grpc/grpc-js';
 import { randomUUID } from 'crypto';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import { Observable, tap } from 'rxjs';
 
 @Injectable()
 export class GrpcLoggingInterceptor implements NestInterceptor {
-  constructor(
-    @InjectPinoLogger(GrpcLoggingInterceptor.name)
-    private readonly logger: PinoLogger,
-  ) {}
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(GrpcLoggingInterceptor.name);
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (context.getType() !== 'rpc') {

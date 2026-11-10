@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "@jobber/grpc": "*",
     "@jobber/nestjs": "*",
     "@jobber/pulsar": "*",
     "dotenv": "^17.4.2",

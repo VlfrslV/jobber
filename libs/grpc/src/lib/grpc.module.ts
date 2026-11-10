@@ -4,9 +4,10 @@ import { GrpcLoggingInterceptor } from './interceptors/grpc-logging.interceptor'
 
 @Module({
   providers: [
+    GrpcLoggingInterceptor,
     {
       provide: APP_INTERCEPTOR,
-      useClass: GrpcLoggingInterceptor,
+      useExisting: GrpcLoggingInterceptor,
     },
   ],
 })

@@ -9,12 +9,12 @@
       "dependsOn": ["generate-ts-proto"]
     },
     "generate-ts-proto": {
-      "command": "protoc --plugin=../../node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src --proto_path=./proto ./proto/*.proto --ts_proto_opt=nestJs=true",
+      "command": "protoc --plugin=../../node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/types/proto --proto_path=./src/lib/proto ./src/lib/proto/*.proto --ts_proto_opt=nestJs=true,exportCommonSymbols=false",
       "options": {
         "cwd": "{projectRoot}"
       },
-      "inputs": ["{projectRoot}/proto/*.proto"],
-      "outputs": ["{projectRoot}/src/proto"],
+      "inputs": ["{projectRoot}/src/lib/proto/*.proto"],
+      "outputs": ["{projectRoot}/src/lib/types/proto"],
       "cache": true
     }
   }

@@ -18,12 +18,18 @@ export abstract class AbstractJob<T extends object> {
       this.producer = await this.pulsarClient.createProducer(job);
     }
 
-    const items = Array.isArray(data) ? data : [data];
-    for (const item of items) {
-      await this.producer.send({
-        data: serialize(item),
-      });
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        await this.producer.send({
+          data: serialize(item),
+        });
+      }
+      return;
     }
+
+    await this.producer.send({
+      data: serialize(data),
+    });
   }
 
   private async validateData(data: T | T[]): Promise<void> {

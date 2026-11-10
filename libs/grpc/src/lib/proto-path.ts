@@ -1,7 +1,22 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 
-const distProto = join(process.cwd(), 'dist/libs/grpc/proto/auth.proto');
-const srcProto = join(process.cwd(), 'libs/grpc/proto/auth.proto');
+const distAuthProto = join(process.cwd(), 'dist/libs/grpc/proto/auth.proto');
+const srcAuthProto = join(process.cwd(), 'libs/grpc/src/lib/proto/auth.proto');
 
-export const AUTH_PROTO_PATH = existsSync(distProto) ? distProto : srcProto;
+const distProductsProto = join(
+  process.cwd(),
+  'dist/libs/grpc/proto/products.proto',
+);
+const srcProductsProto = join(
+  process.cwd(),
+  'libs/grpc/src/lib/proto/products.proto',
+);
+
+export const AUTH_PROTO_PATH = existsSync(distAuthProto)
+  ? distAuthProto
+  : srcAuthProto;
+
+export const PRODUCTS_PROTO_PATH = existsSync(distProductsProto)
+  ? distProductsProto
+  : srcProductsProto;

@@ -1,10 +1,10 @@
+import { Jobs } from '@jobber/nestjs';
+import { FibonacciDataMessage, PulsarClient } from '@jobber/pulsar';
 import { Job } from '../../decorators/job.decorator';
 import { AbstractJob } from '../abstract-job';
-import { PulsarClient } from '@jobber/pulsar';
-import { FibonacciDataMessage } from './fibonacci-data.message';
 
 @Job({
-  name: 'fibonacci',
+  name: Jobs.FIBONACCI,
   description: 'Generate a Fibonaci and store in db',
 })
 export class FibonacciJob extends AbstractJob<FibonacciDataMessage> {

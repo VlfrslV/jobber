@@ -7,7 +7,7 @@ module.exports = createLibConfig({
     assets: [
       {
         glob: '**/*.proto',
-        input: './proto',
+        input: './src/lib/proto',
         output: 'proto',
       },
     ],

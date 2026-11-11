@@ -1,0 +1,12 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-initdb
+  labels:
+    app: postgresql
+data:
+  01-create-databases.sql: |
+    CREATE DATABASE {{ .Values.postgresql.auth.databases.auth }};
+    CREATE DATABASE {{ .Values.postgresql.auth.databases.products }};
+{{- end }}

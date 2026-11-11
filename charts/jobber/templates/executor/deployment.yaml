@@ -22,5 +22,9 @@ spec:
           ports:
             - containerPort: {{ .Values.executor.port }}
           env:
+            - name: PORT
+              value: {{ .Values.executor.port | quote }}
+            - name: PRODUCTS_GRPC_SERVICE_URL
+              value: "products-grpc:{{ .Values.products.port.grpc }}"
 {{ include "jobber.env" . | nindent 12 }}
 {{- end }}

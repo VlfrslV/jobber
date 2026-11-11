@@ -50,7 +50,10 @@ postgresql:
   auth:
     username: postgres
     password: postgres
-    database: jobber
+    databases:
+      auth: auth
+      products: products
+    
 
 
 jobs:
@@ -72,7 +75,18 @@ auth:
   port: 
    http: 3000
    grpc: 50051
-  
   jwt:
     secret: "your-secret-key"
     expirationMs: 3600000
+
+products:
+  enabled: true
+  replicas: 1
+  image: 280248702403.dkr.ecr.eu-north-1.amazonaws.com/jobber/products:latest
+  port:
+    http: 3003
+    grpc: 50052
+  jwt:
+    secret: "your-secret-key"
+    expirationMs: 3600000
+

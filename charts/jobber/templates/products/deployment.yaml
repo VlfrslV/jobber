@@ -1,0 +1,40 @@
+{{- if .Values.products.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products
+  labels:
+    app: products
+spec:
+  replicas: {{ .Values.products.replicas }}
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      labels:
+        app: products
+    spec:
+      initContainers:
+        - name: drizzle-migrate
+          image: {{ .Values.products.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          workingDir: /app/apps/products
+          command: ["npx", "drizzle-kit", "migrate"]
+          env:
+            - name: PRODUCTS_DATABASE_URL
+              value: {{ include "jobber.productsDatabaseUrl" . | quote }}
+      containers:
+        - name: products
+          image: {{ .Values.products.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.products.port.http }}
+            - containerPort: {{ .Values.products.port.grpc }}
+          env:
+            - name: PORT
+              value: {{ .Values.products.port.http | quote }}
+            - name: PRODUCTS_GRPC_SERVICE_URL
+              value: "0.0.0.0:{{ .Values.products.port.grpc }}"
+{{ include "jobber.env" . | nindent 12 }}
+{{- end }}

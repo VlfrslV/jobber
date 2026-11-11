@@ -23,7 +23,7 @@ spec:
           command: ["npx", "prisma", "migrate", "deploy"]
           env:
             - name: AUTH_DATABASE_URL
-              value: {{ include "jobber.databaseUrl" . | quote }}
+              value: {{ include "jobber.authDatabaseUrl" . | quote }}
       containers:
         - name: auth
           image: {{ .Values.auth.image }}
